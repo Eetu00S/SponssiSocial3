@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sponssi Social - Uutiset ja keskustelu</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="light-mode">
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1><i class="fas fa-broadcast-tower"></i> Sponssi Social</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn active" data-section="articles">
+                        <i class="fas fa-home"></i> Etusivu
+                    </button>
+                    <a class="nav-btn" href="pelit.html">
+                        <i class="fas fa-gamepad"></i> Pelit
+                    </a>
+                    <button class="nav-btn" data-section="trending">
+                        <i class="fas fa-fire"></i> Trendit
+                    </button>
+                    <button class="nav-btn" data-section="latest">
+                        <i class="fas fa-clock"></i> Uusimmat
+                    </button>
+                </nav>
+                <div class="header-actions">
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="publish-btn" id="publishBtn">
+                        <i class="fas fa-plus"></i> Julkaise
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="content-grid">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <div class="sidebar-section">
+                        <h3><i class="fas fa-tags"></i> Kategoriat</h3>
+                        <ul class="category-list">
+                            <li><a href="#" class="category-link active" data-category="all"><i class="fas fa-globe"></i> Kaikki</a></li>
+                            <li><a href="#" class="category-link" data-category="education"><i class="fas fa-graduation-cap"></i> Koulutus</a></li>
+                            <li><a href="#" class="category-link" data-category="local"><i class="fas fa-map-marker-alt"></i> Pirkanmaa</a></li>
+                            <li><a href="#" class="category-link" data-category="culture"><i class="fas fa-palette"></i> Kulttuuri</a></li>
+                            <li><a href="#" class="category-link" data-category="sports"><i class="fas fa-futbol"></i> Urheilu</a></li>
+
+                        </ul>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <h3><i class="fas fa-fire"></i> Trendit</h3>
+                        <div class="trending-topics">
+                            <div class="trending-topic">
+                                <span class="trending-number">#1</span>
+                                <span class="trending-text">#LukioElämä</span>
+                            </div>
+                            <div class="trending-topic">
+                                <span class="trending-number">#2</span>
+                                <span class="trending-text">#Tampere</span>
+                            </div>
+                            <div class="trending-topic">
+                                <span class="trending-number">#3</span>
+                                <span class="trending-text">#Ylioppilaskirjoitukset</span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <section class="main-content">
+                    <div class="content-header">
+                        <h2>Uusimmat artikkelit</h2>
+                        <div class="content-filters">
+                            <select class="filter-select" id="sortSelect">
+                                <option value="latest">Uusimmat ensin</option>
+                                <option value="popular">Suosituimmat</option>
+                                <option value="comments">Eniten kommentteja</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="articles-container" id="articlesContainer">
+                        <!-- Articles will be dynamically loaded here -->
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Publish Modal -->
+    <div class="modal" id="publishModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Julkaise uusi artikkeli</h3>
+                <button class="modal-close" id="modalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form class="publish-form" id="publishForm">
+                <div class="form-group">
+                    <label for="authorName">Kirjoittajan nimi *</label>
+                    <input type="text" id="authorName" name="authorName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="articleTitle">Artikkelin otsikko *</label>
+                    <input type="text" id="articleTitle" name="articleTitle" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="articleCategory">Kategoria</label>
+                    <select id="articleCategory" name="articleCategory">
+                        <option value="general">Yleinen</option>
+                        <option value="education">Koulutus</option>
+                        <option value="local">Pirkanmaa</option>
+                        <option value="culture">Kulttuuri</option>
+                        <option value="sports">Urheilu</option>
+
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="articleContent">Artikkelin sisältö *</label>
+                    <textarea id="articleContent" name="articleContent" rows="8" required 
+                              placeholder="Kirjoita artikkelisi sisältö tähän..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelPublish">Peruuta</button>
+                    <button type="submit" class="btn btn-primary">Julkaise</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Comment Modal -->
+    <div class="modal" id="commentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Lisää kommentti</h3>
+                <button class="modal-close" id="commentModalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form class="comment-form" id="commentForm">
+                <div class="form-group">
+                    <label for="commentAuthor">Nimesi *</label>
+                    <input type="text" id="commentAuthor" name="commentAuthor" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="commentContent">Kommenttisi *</label>
+                    <textarea id="commentContent" name="commentContent" rows="4" required 
+                              placeholder="Kirjoita kommenttisi tähän..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelComment">Peruuta</button>
+                    <button type="submit" class="btn btn-primary">Lähetä</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

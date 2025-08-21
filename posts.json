@@ -1,0 +1,16 @@
+{
+  "articles": [
+    {
+      "id": "1",
+      "author": "Sponssi Social Tiimi",
+      "title": "Tervetuloa Sponssi Socialiin - uuteen nuorten some-alustaan",
+      "category": "general",
+      "content": "Hei! Tervetuloa Sponssi Socialiin, uuteen sosiaalisen median alustaan joka on suunniteltu erityisesti Pirkanmaan nuorille. Täällä voit jakaa uutisia, keskustella lukioaiheista ja pysyä ajan tasalla paikallisista tapahtumista. Aloita julkaisemalla oma artikkelisi tai kommentoimalla muiden julkaisuja. Toivomme että viihdyt täällä!",
+      "date": "2024-01-01T00:00:00.000Z",
+      "likes": 0,
+      "comments": []
+    }
+  ]
+}
+
+

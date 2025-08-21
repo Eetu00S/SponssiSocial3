@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pelit - Sponssi Social</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="light-mode">
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1><i class="fas fa-gamepad"></i> Pelit</h1>
+                </div>
+                <nav class="nav">
+                    <a class="nav-btn" href="index.html"><i class="fas fa-home"></i> Etusivu</a>
+                </nav>
+                <div class="header-actions">
+                    <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section class="main-content">
+                <div class="content-header">
+                    <h2>Cookie Clicker - kevyt versio</h2>
+                </div>
+                <div class="article" style="text-align:center">
+                    <h3 id="score">Keksit: 0</h3>
+                    <button class="publish-btn" id="cookieBtn" style="width:220px;height:220px;border-radius:50%;font-size:1.25rem">
+                        🍪 Klikkaa!
+                    </button>
+                    <div style="margin-top:1.5rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+                        <button class="btn btn-primary" id="buyCursor">Osta kursori (+1/s) — 10</button>
+                        <button class="btn btn-primary" id="buyOven">Osta uuni (+5/s) — 100</button>
+                    </div>
+                    <p style="margin-top:1rem;color:var(--text-secondary)">Edistyminen tallennetaan selaimeesi.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+    (function(){
+        const state = JSON.parse(localStorage.getItem('cookieGame')||'{}');
+        let cookies = state.cookies || 0;
+        let cursors = state.cursors || 0; // +1/s
+        let ovens = state.ovens || 0;     // +5/s
+        const score = document.getElementById('score');
+        const cookieBtn = document.getElementById('cookieBtn');
+        const buyCursor = document.getElementById('buyCursor');
+        const buyOven = document.getElementById('buyOven');
+
+        function save(){
+            localStorage.setItem('cookieGame', JSON.stringify({cookies,cursors,ovens}));
+        }
+        function render(){
+            score.textContent = `Keksit: ${Math.floor(cookies)}`;
+            buyCursor.textContent = `Osta kursori (+1/s) — ${10 + cursors*2}`;
+            buyOven.textContent = `Osta uuni (+5/s) — ${100 + ovens*20}`;
+        }
+        cookieBtn.addEventListener('click', ()=>{ cookies += 1; save(); render(); });
+        buyCursor.addEventListener('click', ()=>{
+            const cost = 10 + cursors*2; if (cookies >= cost){ cookies -= cost; cursors += 1; save(); render(); }
+        });
+        buyOven.addEventListener('click', ()=>{
+            const cost = 100 + ovens*20; if (cookies >= cost){ cookies -= cost; ovens += 1; save(); render(); }
+        });
+        setInterval(()=>{ cookies += cursors*1/1 + ovens*5/1; save(); render(); }, 1000);
+        render();
+
+        // theme toggle reuse
+        const themeToggle = document.getElementById('themeToggle');
+        const icon = themeToggle.querySelector('i');
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') { document.body.classList.add('dark-mode'); icon.className='fas fa-sun'; }
+        themeToggle.addEventListener('click', ()=>{
+            document.body.classList.toggle('dark-mode');
+            const dark = document.body.classList.contains('dark-mode');
+            icon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
+            localStorage.setItem('theme', dark ? 'dark' : 'light');
+        });
+    })();
+    </script>
+</body>
+</html>
+
+
