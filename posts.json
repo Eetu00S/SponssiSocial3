@@ -5,13 +5,30 @@
       "author": "Sponssi Social Tiimi",
       "title": "Tervetuloa Sponssi Socialiin - uuteen some-alustaan",
       "category": "general",
-      "content": "Hei! Tervetuloa Sponssi Socialiin. Sivusto ei toimi edelleenkään, eivätkä muut näe tekemiäsi kommentteja tai julkaisuja",
+      "content": "Sivusto ei valitettavasti toimi edelleenkään, eivätkä muut näe tekemiäsi kommentteja tai julkaisuja",
       "date": "2024-01-01T00:00:00.000Z",
       "likes": 0,
       "comments": []
     }
   ]
 }
+
+{
+  "articles": [
+    {
+      "id": "2",
+      "author": "Sponssi Social Tiimi",
+      "title": "hei",
+      "category": "general",
+      "content": "Githubin koodiin suoraan kirjoittaminen on näemmän ainoa keino tehdä julkaisuja",
+      "date": "2025-08-01T00:00:00.000Z",
+      "likes": 0,
+      "comments": []
+    }
+  ]
+}
+
+
 
 
 
