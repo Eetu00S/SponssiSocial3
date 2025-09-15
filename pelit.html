@@ -6,6 +6,7 @@
     <title>Pelit - Sponssi Social</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="light-mode">
@@ -25,22 +26,59 @@
         </div>
     </header>
 
-    <main class="main">
+    <main class="main games-arcade">
         <div class="container">
             <section class="main-content">
                 <div class="content-header">
-                    <h2>Cookie Clicker - kevyt versio</h2>
+                    <h2>Cookie Clicker: Sponssi-versio</h2>
                 </div>
-                <div class="article" style="text-align:center">
-                    <h3 id="score">Keksit: 0</h3>
-                    <button class="publish-btn" id="cookieBtn" style="width:220px;height:220px;border-radius:50%;font-size:1.25rem">
-                        🍪 Klikkaa!
-                    </button>
-                    <div style="margin-top:1.5rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
-                        <button class="btn btn-primary" id="buyCursor">Osta kursori (+1/s) — 10</button>
-                        <button class="btn btn-primary" id="buyOven">Osta uuni (+5/s) — 100</button>
+                <div class="article cookie-panel">
+                    <div class="cookie-top">
+                        <div class="cookie-stats">
+                            <div class="stat"><span class="label">Keksit</span> <span id="score" class="value">0</span></div>
+                            <div class="stat"><span class="label">CPS</span> <span id="cps" class="value">0</span></div>
+                            <div class="stat"><span class="label">Klikki</span> <span id="clickPower" class="value">+1</span></div>
+                            <div class="stat"><span class="label">Kerroin</span> <span id="multiplier" class="value">x1</span></div>
+                        </div>
+                        <button class="cookie-btn" id="cookieBtn">🍪</button>
                     </div>
-                    <p style="margin-top:1rem;color:var(--text-secondary)">Edistyminen tallennetaan selaimeesi.</p>
+
+                    <div class="shop">
+                        <h3>Kauppa</h3>
+                        <div class="shop-grid">
+                            <button class="shop-item" id="buyCursor"><span>Kursori</span><small>+1/s</small><strong class="cost" data-base="10">10</strong></button>
+                            <button class="shop-item" id="buyOven"><span>Uuni</span><small>+5/s</small><strong class="cost" data-base="100">100</strong></button>
+                            <button class="shop-item" id="buyFarm"><span>Maatila</span><small>+25/s</small><strong class="cost" data-base="600">600</strong></button>
+                            <button class="shop-item" id="buyFactory"><span>Tehdas</span><small>+100/s</small><strong class="cost" data-base="3000">3000</strong></button>
+                        </div>
+
+                        <h3>Parannukset</h3>
+                        <div class="shop-grid">
+                            <button class="shop-item" id="upgradeClick"><span>Vahvempi klik</span><small>+1 klikkiin</small><strong class="cost" data-base="50">50</strong></button>
+                            <button class="shop-item" id="upgradeAuto"><span>Voideltu hammasratas</span><small>+5% CPS</small><strong class="cost" data-base="200">200</strong></button>
+                        </div>
+                    </div>
+
+                    <div class="prestige">
+                        <h3>Prestige</h3>
+                        <p>Tyhjennä eteneminen saadaksesi pysyvän 3x kertoimen kekseille.</p>
+                        <button class="btn-prestige" id="doPrestige">Aloita alusta ja saa +3x</button>
+                    </div>
+                    <p class="save-note">Edistyminen tallennetaan selaimeesi.</p>
+                </div>
+
+                <div class="content-header" style="margin-top:2rem">
+                    <h2>Flappy Sponssi</h2>
+                </div>
+                <div class="article retro-panel">
+                    <div class="flappy-ui">
+                        <canvas id="flappyCanvas" width="420" height="560"></canvas>
+                        <div class="flappy-controls">
+                            <button class="btn-primary" id="flappyStart">Start</button>
+                            <span id="flappyScore">0</span>
+                        </div>
+                        <p class="save-note">Paina välilyöntiä tai klikkaa hypätäksesi.</p>
+                    </div>
                 </div>
             </section>
         </div>
@@ -48,34 +86,133 @@
 
     <script>
     (function(){
-        const state = JSON.parse(localStorage.getItem('cookieGame')||'{}');
-        let cookies = state.cookies || 0;
-        let cursors = state.cursors || 0; // +1/s
-        let ovens = state.ovens || 0;     // +5/s
-        const score = document.getElementById('score');
+        // Cookie game state
+        const saved = JSON.parse(localStorage.getItem('cookieGame')||'{}');
+        let cookies = saved.cookies || 0;
+        let cursors = saved.cursors || 0;      // +1/s
+        let ovens = saved.ovens || 0;          // +5/s
+        let farms = saved.farms || 0;          // +25/s
+        let factories = saved.factories || 0;  // +100/s
+        let clickBonus = saved.clickBonus || 0; // +1 per upgrade
+        let autoBonusPct = saved.autoBonusPct || 0; // % to CPS
+        let prestige = JSON.parse(localStorage.getItem('cookiePrestige')||'{}');
+        let prestigeCount = prestige.count || 0;
+
+        const scoreEl = document.getElementById('score');
+        const cpsEl = document.getElementById('cps');
+        const clickEl = document.getElementById('clickPower');
+        const multEl = document.getElementById('multiplier');
         const cookieBtn = document.getElementById('cookieBtn');
-        const buyCursor = document.getElementById('buyCursor');
-        const buyOven = document.getElementById('buyOven');
+
+        const costs = {
+            cursor: (n)=> Math.floor(10 * Math.pow(1.15, n)),
+            oven: (n)=> Math.floor(100 * Math.pow(1.15, n)),
+            farm: (n)=> Math.floor(600 * Math.pow(1.15, n)),
+            factory: (n)=> Math.floor(3000 * Math.pow(1.15, n)),
+            upgradeClick: (n)=> Math.floor(50 * Math.pow(2, n)),
+            upgradeAuto: (n)=> Math.floor(200 * Math.pow(2, n)),
+        };
+
+        function currentMultiplier(){
+            return Math.pow(3, prestigeCount) || 1;
+        }
+
+        function getCpsBase(){
+            const base = cursors*1 + ovens*5 + farms*25 + factories*100;
+            const withAuto = base * (1 + autoBonusPct/100);
+            return withAuto;
+        }
+
+        function getCps(){
+            return getCpsBase() * currentMultiplier();
+        }
+
+        function clickPower(){
+            return (1 + clickBonus) * currentMultiplier();
+        }
 
         function save(){
-            localStorage.setItem('cookieGame', JSON.stringify({cookies,cursors,ovens}));
+            localStorage.setItem('cookieGame', JSON.stringify({
+                cookies,cursors,ovens,farms,factories,clickBonus,autoBonusPct
+            }));
+            localStorage.setItem('cookiePrestige', JSON.stringify({ count: prestigeCount }));
         }
+
         function render(){
-            score.textContent = `Keksit: ${Math.floor(cookies)}`;
-            buyCursor.textContent = `Osta kursori (+1/s) — ${10 + cursors*2}`;
-            buyOven.textContent = `Osta uuni (+5/s) — ${100 + ovens*20}`;
+            scoreEl.textContent = Math.floor(cookies).toLocaleString('fi-FI');
+            cpsEl.textContent = getCps().toFixed(1);
+            clickEl.textContent = `+${clickPower().toFixed(0)}`;
+            multEl.textContent = `x${currentMultiplier().toFixed(0)}`;
+
+            document.querySelector('#buyCursor .cost').textContent = costs.cursor(cursors);
+            document.querySelector('#buyOven .cost').textContent = costs.oven(ovens);
+            document.querySelector('#buyFarm .cost').textContent = costs.farm(farms);
+            document.querySelector('#buyFactory .cost').textContent = costs.factory(factories);
+            document.querySelector('#upgradeClick .cost').textContent = costs.upgradeClick(clickBonus);
+            document.querySelector('#upgradeAuto .cost').textContent = costs.upgradeAuto(Math.floor(autoBonusPct/5));
         }
-        cookieBtn.addEventListener('click', ()=>{ cookies += 1; save(); render(); });
-        buyCursor.addEventListener('click', ()=>{
-            const cost = 10 + cursors*2; if (cookies >= cost){ cookies -= cost; cursors += 1; save(); render(); }
+
+        // Interactions
+        cookieBtn.addEventListener('click', ()=>{
+            cookies += clickPower();
+            save();
+            render();
         });
-        buyOven.addEventListener('click', ()=>{
-            const cost = 100 + ovens*20; if (cookies >= cost){ cookies -= cost; ovens += 1; save(); render(); }
+
+        function tryBuy(cost, onBuy){
+            if (cookies >= cost){
+                cookies -= cost;
+                onBuy();
+                save();
+                render();
+            }
+        }
+
+        document.getElementById('buyCursor').addEventListener('click', ()=>{
+            tryBuy(costs.cursor(cursors), ()=>{ cursors += 1; });
         });
-        setInterval(()=>{ cookies += cursors*1/1 + ovens*5/1; save(); render(); }, 1000);
+        document.getElementById('buyOven').addEventListener('click', ()=>{
+            tryBuy(costs.oven(ovens), ()=>{ ovens += 1; });
+        });
+        document.getElementById('buyFarm').addEventListener('click', ()=>{
+            tryBuy(costs.farm(farms), ()=>{ farms += 1; });
+        });
+        document.getElementById('buyFactory').addEventListener('click', ()=>{
+            tryBuy(costs.factory(factories), ()=>{ factories += 1; });
+        });
+        document.getElementById('upgradeClick').addEventListener('click', ()=>{
+            tryBuy(costs.upgradeClick(clickBonus), ()=>{ clickBonus += 1; });
+        });
+        document.getElementById('upgradeAuto').addEventListener('click', ()=>{
+            const purchased = Math.floor(autoBonusPct/5);
+            tryBuy(costs.upgradeAuto(purchased), ()=>{ autoBonusPct += 5; });
+        });
+
+        // Tick
+        setInterval(()=>{
+            cookies += getCps()/10; // 10 ticks per second
+            if (cookies < 0) cookies = 0;
+            save();
+            render();
+        }, 100);
+
+        // Prestige
+        document.getElementById('doPrestige').addEventListener('click', ()=>{
+            const confirmText = `Prestige nollaa kaiken ja antaa pysyvän 3x-kertoimen. Nykyinen kerroin: x${currentMultiplier().toFixed(0)} → x${(currentMultiplier()*3).toFixed(0)}. Jatketaanko?`;
+            if (confirm(confirmText)){
+                cookies = 0;
+                cursors = 0; ovens = 0; farms = 0; factories = 0;
+                clickBonus = 0; autoBonusPct = 0;
+                prestigeCount += 1;
+                save();
+                render();
+            }
+        });
+
+        // Initial render
         render();
 
-        // theme toggle reuse
+        // Theme toggle reuse
         const themeToggle = document.getElementById('themeToggle');
         const icon = themeToggle.querySelector('i');
         const savedTheme = localStorage.getItem('theme');
@@ -86,6 +223,110 @@
             icon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
             localStorage.setItem('theme', dark ? 'dark' : 'light');
         });
+
+        // Flappy Bird clone
+        const canvas = document.getElementById('flappyCanvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('flappyStart');
+        const scoreLbl = document.getElementById('flappyScore');
+
+        let fbState = 'idle';
+        let bird, pipes, gravity, jump, score, speed;
+
+        function resetFlappy(){
+            bird = { x: 100, y: canvas.height/2, vy: 0, r: 12 };
+            pipes = [];
+            gravity = 0.45;
+            jump = -7.5;
+            score = 0;
+            speed = 2.8;
+            scoreLbl.textContent = '0';
+            spawnPipe();
+        }
+
+        function spawnPipe(){
+            const gap = 120;
+            const minTop = 50;
+            const maxTop = canvas.height - gap - 50;
+            const top = Math.floor(Math.random()*(maxTop-minTop))+minTop;
+            pipes.push({ x: canvas.width+20, top: top, bottom: top+gap, w: 48, counted: false });
+        }
+
+        function updateFlappy(){
+            bird.vy += gravity;
+            bird.y += bird.vy;
+            if (bird.y < 0) bird.y = 0;
+            if (bird.y > canvas.height) gameOver();
+
+            if (pipes.length === 0 || (pipes[pipes.length-1].x < canvas.width - 220)) {
+                spawnPipe();
+            }
+            for (let i=0;i<pipes.length;i++){
+                pipes[i].x -= speed;
+                const p = pipes[i];
+                if (!p.counted && p.x + p.w < bird.x - bird.r){
+                    score += 1; p.counted = true; scoreLbl.textContent = score.toString();
+                }
+            }
+            if (pipes[0] && pipes[0].x + pipes[0].w < -10) pipes.shift();
+
+            // Collision
+            for (const p of pipes){
+                if (bird.x + bird.r > p.x && bird.x - bird.r < p.x + p.w){
+                    if (bird.y - bird.r < p.top || bird.y + bird.r > p.bottom){
+                        gameOver();
+                    }
+                }
+            }
+        }
+
+        function drawFlappy(){
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            // Background
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg-secondary').trim() || '#eef';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            // Pipes
+            for (const p of pipes){
+                ctx.fillStyle = '#2e7d32';
+                ctx.fillRect(p.x, 0, p.w, p.top);
+                ctx.fillRect(p.x, p.bottom, p.w, canvas.height - p.bottom);
+            }
+            // Bird
+            ctx.beginPath();
+            ctx.arc(bird.x, bird.y, bird.r, 0, Math.PI*2);
+            ctx.fillStyle = '#ffca28';
+            ctx.fill();
+            ctx.strokeStyle = '#f57f17';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        let rafId;
+        function loop(){
+            if (fbState !== 'running') return;
+            updateFlappy();
+            drawFlappy();
+            rafId = requestAnimationFrame(loop);
+        }
+
+        function gameOver(){
+            fbState = 'over';
+            cancelAnimationFrame(rafId);
+        }
+
+        function flap(){
+            if (fbState === 'idle') return;
+            if (fbState === 'over') return;
+            bird.vy = jump;
+        }
+
+        startBtn.addEventListener('click', ()=>{
+            resetFlappy();
+            fbState = 'running';
+            loop();
+        });
+        canvas.addEventListener('click', flap);
+        window.addEventListener('keydown', (e)=>{ if (e.code === 'Space'){ e.preventDefault(); flap(); } });
     })();
     </script>
 </body>
